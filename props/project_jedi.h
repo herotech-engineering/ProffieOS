@@ -30,11 +30,7 @@ public:
   static const int RETRACTION_MOTOR_2_PIN = bladePowerPin2; // LED2 pin for retraction motor 2
   static const int CANE_ROTATION_MOTOR_PIN = bladePowerPin4; // LED4 pin for cane rotation motor
   static const int CLUTCH_PIN = bladePowerPin3;  // LED3 pin for clutch control
-  
-  // Thresholds for spin detection
-  const float SPIN_THRESHOLD = 520.0f;  // Angular velocity threshold for activation (deg/s)
-  const float SLOW_THRESHOLD = 320.0f;  // Angular velocity threshold for slow spin (deg/s)
-  
+    
   bool rotating_chassis_spin_on_ = false;
   uint32_t clutch_return_time_ = 0;
   uint32_t blade_tighten_time_ = 0;

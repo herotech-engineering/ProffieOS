@@ -41,5 +41,5 @@ SimpleBladePtr<myLED, NoLED, NoLED, NoLED, bladePowerPin6, -1, -1, -1>(),
 #endif
 
 #ifdef CONFIG_BUTTONS
-//Button PowerButton(BUTTON_POWER, powerButtonPin, "pow");
+Button PowerButton(BUTTON_POWER, powerButtonPin, "pow");
 #endif

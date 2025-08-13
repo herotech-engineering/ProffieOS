@@ -69,9 +69,6 @@ public:
   void Loop() override {
     PropBase::Loop();
 
-    // Get gyroscope data from IMU to detect rotation
-    float rotation_speed = GetRotationSpeed();
-
     if (millis() > ignite_timer_ && ignite_timer_ > 0) {
       ignite_timer_ = 0;
       SaberBase::TurnOn();
@@ -164,15 +161,6 @@ public:
     return is_on_;
   }
 
-  // Helper function to get rotation speed from the IMU
-  float GetRotationSpeed() {
-    // Use ProffieOS's motion system to get gyroscope data
-    Vec3 gyro = fusor.gyro();
-    
-    // Calculate the magnitude of rotation (in degrees per second)
-    return sqrtf(gyro.x * gyro.x + gyro.y * gyro.y + gyro.z * gyro.z);
-  }
-  
   // Activate the lightsaber
   void ActivateSaber() {
     if (is_on_) return;

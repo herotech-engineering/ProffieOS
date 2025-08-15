@@ -74,7 +74,7 @@ public:
       clutch_return_time_ = millis() + 350;
     }
   
-    // Check for servo return timing
+    // Check for clutch return timing
     if (millis() > clutch_return_time_ && clutch_return_time_ > 0) {
       digitalWrite(CLUTCH_PIN, LOW); // Return to left position
       clutch_return_time_ = 0; // Reset timer
@@ -160,11 +160,11 @@ public:
   // Begin retraction sequence when spinning slows
   void BeginRetraction() {
     // failsafe off timing
-    failsafe_off_ = millis() + 5500;
-    sound_off_ = millis() + 4500;
+    failsafe_off_ = millis() + 5000;
+    sound_off_ = millis() + 4000;
     // Turn on cane rotation motor
     digitalWrite(CANE_ROTATION_MOTOR_PIN, HIGH);
-    // Turn on both retraction motors at full power
+    // Turn on retraction motor at full power
     LSanalogWrite(RETRACTION_MOTOR_PIN, 21000);
   }
   

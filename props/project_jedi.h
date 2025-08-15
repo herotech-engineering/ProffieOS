@@ -35,9 +35,7 @@ public:
   uint32_t blade_tighten_time_ = 0;
   uint32_t blade_tension_time_ = 0;
   uint32_t activation_buffer_ = 0;
-  uint32_t last_check_time_ = 0;
   uint32_t failsafe_off_ = 0;
-  uint32_t spin_speed_buffer_ = 0;
   uint32_t ignite_timer_ = 0;
   uint32_t sound_off_ = 0;
 
@@ -52,13 +50,13 @@ public:
 	pinMode(CHASSIS_SPIN_PIN, OUTPUT);
 
     // Turn everything off initially
-    digitalWrite(LED_STRIP_PIN, LOW);
+    LSanalogWriteSetup(LED_STRIP_PIN);
+	analogWrite(LED_STRIP_PIN, 0);
     LSanalogWriteSetup(RETRACTION_MOTOR_PIN);
     analogWrite(RETRACTION_MOTOR_PIN, 0);
     digitalWrite(CANE_ROTATION_MOTOR_PIN, LOW);
     digitalWrite(CLUTCH_PIN, LOW);
 	digitalWrite(CHASSIS_SPIN_PIN, LOW);
-
   }
 
   // Main loop function that gets called by ProffieOS
@@ -68,9 +66,8 @@ public:
     if (millis() > ignite_timer_ && ignite_timer_ > 0) {
       ignite_timer_ = 0;
       SaberBase::TurnOn();
-    // Turn on LED strips (simple on/off, no PWM)
-      digitalWrite(LED_STRIP_1_PIN, HIGH);
-      digitalWrite(LED_STRIP_2_PIN, HIGH);
+    // Turn on LED strip (simple on/off, no PWM)
+      analogWrite(LED_STRIP_PIN, 26000);
     // Move clutch right 5mm
       digitalWrite(CLUTCH_PIN, HIGH);
     // Schedule clutch to return after 350ms
@@ -82,22 +79,19 @@ public:
       digitalWrite(CLUTCH_PIN, LOW); // Return to left position
       clutch_return_time_ = 0; // Reset timer
       blade_tighten_time_ = millis() + 150;
-      LSanalogWrite(RETRACTION_MOTOR_1_PIN, 6100);
-      LSanalogWrite(RETRACTION_MOTOR_2_PIN, 6200);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 3000);
     }
 
     // Check for blade tightening
     if (millis() > blade_tighten_time_ && blade_tighten_time_ > 0) {
-      LSanalogWrite(RETRACTION_MOTOR_1_PIN, 5100);
-      LSanalogWrite(RETRACTION_MOTOR_2_PIN, 5200);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 4000);
       blade_tighten_time_ = 0;
       blade_tension_time_ = millis() + 50;
     }
-	  
+
     // Check for blade tensioning
     if (millis() > blade_tension_time_ && blade_tension_time_ > 0) {
-      LSanalogWrite(RETRACTION_MOTOR_1_PIN, 1550);
-      LSanalogWrite(RETRACTION_MOTOR_2_PIN, 1600);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 1500);
       blade_tension_time_ = 0;
     }
 
@@ -110,12 +104,10 @@ public:
     if (failsafe_off_ > 0 && millis() > failsafe_off_) {
       DeactivateSaber();
 
-      digitalWrite(LED_STRIP_1_PIN, LOW);
-      digitalWrite(LED_STRIP_2_PIN, LOW);
+      LSanalogWrite(LED_STRIP_PIN, 0);
     
       // Turn off all motors
-      LSanalogWrite(RETRACTION_MOTOR_1_PIN, 0);
-      LSanalogWrite(RETRACTION_MOTOR_2_PIN, 0);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 0);
       digitalWrite(CANE_ROTATION_MOTOR_PIN, LOW);
     
       // Ensure clutch is in left position
@@ -123,36 +115,28 @@ public:
       failsafe_off_ = 0; // Reset timer
     }
 
-
-    if (millis() - last_check_time_ >= 300) { 
-	last_check_time_ = millis();
-
     // State machine for saber control
     switch (power_state_) {
       case OFF:
-        if (rotation_speed > SPIN_THRESHOLD && !is_on_ && millis() > activation_buffer_) {
-          // Hilt is spinning fast enough - activate lightsaber
+        if (!is_on_ && millis() > activation_buffer_) {
           ActivateSaber();
-          spin_state_ = ON;
-	  activation_buffer_ = millis() + 12000;
-	  spin_speed_buffer_ = millis() + 12000;
+          power_state_ = ON;
+	  activation_buffer_ = millis() + 8000;
         }
         break;
         
       case ON:
-        if (rotation_speed < SLOW_THRESHOLD && millis() > spin_speed_buffer_) {
-          // Spinning is slowing - start retraction
+        if ( && millis() > activation_buffer_) {
           BeginRetraction();
-          spin_state_ = RETRACTING;
-	  activation_buffer_ = millis() + 20000;
+          power_state_ = RETRACTING;
+	  activation_buffer_ = millis() + 2000;
         }
         break;
 
       case RETRACTING:
-        if (rotation_speed < SLOW_THRESHOLD && millis() > spin_speed_buffer_) {
-          // Spinning is slowing - start retraction
-          BeginRetraction();
-          spin_state_ = OFF;
+        if ( && millis() > activation_buffer_) {
+          DeactivateSaber();
+          power_state_ = OFF;
 	  activation_buffer_ = millis() + 20000;
         }
         break;
@@ -170,7 +154,7 @@ public:
   void ActivateSaber() {
     if (is_on_) return;
     is_on_ = true;
-    ignite_timer_ = millis() + 8000;
+    ignite_timer_ = millis() + 500;
   }
   
   // Begin retraction sequence when spinning slows

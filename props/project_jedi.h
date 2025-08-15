@@ -56,7 +56,8 @@ public:
     analogWrite(RETRACTION_MOTOR_PIN, 0);
     digitalWrite(CANE_ROTATION_MOTOR_PIN, LOW);
     digitalWrite(CLUTCH_PIN, LOW);
-	digitalWrite(CHASSIS_SPIN_PIN, LOW);
+	LSanalogWriteSetup(CHASSIS_SPIN_PIN);
+	analogWrite(CHASSIS_SPIN_PIN, 0);
   }
 
   // Main loop function that gets called by ProffieOS
@@ -65,9 +66,10 @@ public:
 
     if (millis() > ignite_timer_ && ignite_timer_ > 0) {
       ignite_timer_ = 0;
+      LSanalogWrite(CHASSIS_SPIN_PIN, 23000);
       SaberBase::TurnOn();
     // Turn on LED strip (simple on/off, no PWM)
-      analogWrite(LED_STRIP_PIN, 26000);
+      LSanalogWrite(LED_STRIP_PIN, 26000);
     // Move clutch right 5mm
       digitalWrite(CLUTCH_PIN, HIGH);
     // Schedule clutch to return after 350ms
@@ -103,7 +105,7 @@ public:
     // Failsafe off
     if (failsafe_off_ > 0 && millis() > failsafe_off_) {
       DeactivateSaber();
-
+	  LSanalogWrite(CHASSIS_SPIN_PIN, 0);
       LSanalogWrite(LED_STRIP_PIN, 0);
     
       // Turn off all motors
@@ -172,12 +174,11 @@ public:
   void DeactivateSaber() {
     if (!is_on_) return;
     is_on_ = false;
-    // Turn off LED strips
-    digitalWrite(LED_STRIP_1_PIN, LOW);
-    digitalWrite(LED_STRIP_2_PIN, LOW);
+    // Turn off LED strip
+    LSanalogWrite(LED_STRIP_PIN, 0);
+    LSanalogWrite(CHASSIS_SPIN_PIN, 0);
     // Turn off all motors
-    LSanalogWrite(RETRACTION_MOTOR_1_PIN, 0);
-    LSanalogWrite(RETRACTION_MOTOR_2_PIN, 0);
+    LSanalogWrite(RETRACTION_MOTOR_PIN, 0);
     digitalWrite(CANE_ROTATION_MOTOR_PIN, LOW);
     // Ensure servo is in left position
     digitalWrite(CLUTCH_PIN, LOW);

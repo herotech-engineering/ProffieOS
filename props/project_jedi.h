@@ -17,21 +17,20 @@ public:
 
   // State tracking
   bool is_on_ = false;
-  enum SpinState {
-    STOPPED,
-    SPINNING
+  enum PowerState {
+    OFF,
+    ON,
+    RETRACTING,
   };
-  SpinState spin_state_ = STOPPED;
+  PowerState power_state_ = OFF;
   
   // Pin definitions
-  static const int LED_STRIP_1_PIN = bladePowerPin5;     // LED5 pin for LED strip 1
-  static const int LED_STRIP_2_PIN = bladePowerPin6;    // LED6 pin for LED strip 2
-  static const int RETRACTION_MOTOR_1_PIN = bladePowerPin1; // LED1 pin for retraction motor 1
-  static const int RETRACTION_MOTOR_2_PIN = bladePowerPin2; // LED2 pin for retraction motor 2
-  static const int CANE_ROTATION_MOTOR_PIN = bladePowerPin4; // LED4 pin for cane rotation motor
-  static const int CLUTCH_PIN = bladePowerPin3;  // LED3 pin for clutch control
-    
-  bool rotating_chassis_spin_on_ = false;
+  static const int LED_STRIP_PIN = bladePowerPin5;     // LED pin for LED strip
+  static const int RETRACTION_MOTOR_PIN = bladePowerPin1; // LED pin for retraction motor 
+  static const int CANE_ROTATION_MOTOR_PIN = bladePowerPin4; // LED pin for cane rotation motor
+  static const int CLUTCH_PIN = bladePowerPin3;  // LED pin for clutch control
+  static const int CHASSIS_SPIN_PIN = bladePowerPin2; // LED pin for chassis spinning
+
   uint32_t clutch_return_time_ = 0;
   uint32_t blade_tighten_time_ = 0;
   uint32_t blade_tension_time_ = 0;
@@ -46,22 +45,19 @@ public:
     PropBase::Setup();
     
     // Initialize pins
-    pinMode(LED_STRIP_1_PIN, OUTPUT);
-    pinMode(LED_STRIP_2_PIN, OUTPUT);
-    pinMode(RETRACTION_MOTOR_1_PIN, OUTPUT);
-    pinMode(RETRACTION_MOTOR_2_PIN, OUTPUT);
+    pinMode(LED_STRIP_PIN, OUTPUT);
+    pinMode(RETRACTION_MOTOR_PIN, OUTPUT);
     pinMode(CANE_ROTATION_MOTOR_PIN, OUTPUT);
     pinMode(CLUTCH_PIN, OUTPUT);
+	pinMode(CHASSIS_SPIN_PIN, OUTPUT);
 
     // Turn everything off initially
-    digitalWrite(LED_STRIP_1_PIN, LOW);
-    digitalWrite(LED_STRIP_2_PIN, LOW);
-    LSanalogWriteSetup(RETRACTION_MOTOR_1_PIN);
-    LSanalogWriteSetup(RETRACTION_MOTOR_2_PIN);
-    analogWrite(RETRACTION_MOTOR_1_PIN, 0);
-    analogWrite(RETRACTION_MOTOR_2_PIN, 0);
+    digitalWrite(LED_STRIP_PIN, LOW);
+    LSanalogWriteSetup(RETRACTION_MOTOR_PIN);
+    analogWrite(RETRACTION_MOTOR_PIN, 0);
     digitalWrite(CANE_ROTATION_MOTOR_PIN, LOW);
     digitalWrite(CLUTCH_PIN, LOW);
+	digitalWrite(CHASSIS_SPIN_PIN, LOW);
 
   }
 
@@ -132,22 +128,31 @@ public:
 	last_check_time_ = millis();
 
     // State machine for saber control
-    switch (spin_state_) {
-      case STOPPED:
+    switch (power_state_) {
+      case OFF:
         if (rotation_speed > SPIN_THRESHOLD && !is_on_ && millis() > activation_buffer_) {
           // Hilt is spinning fast enough - activate lightsaber
           ActivateSaber();
-          spin_state_ = SPINNING;
+          spin_state_ = ON;
 	  activation_buffer_ = millis() + 12000;
 	  spin_speed_buffer_ = millis() + 12000;
         }
         break;
         
-      case SPINNING:
+      case ON:
         if (rotation_speed < SLOW_THRESHOLD && millis() > spin_speed_buffer_) {
           // Spinning is slowing - start retraction
           BeginRetraction();
-          spin_state_ = STOPPED;
+          spin_state_ = RETRACTING;
+	  activation_buffer_ = millis() + 20000;
+        }
+        break;
+
+      case RETRACTING:
+        if (rotation_speed < SLOW_THRESHOLD && millis() > spin_speed_buffer_) {
+          // Spinning is slowing - start retraction
+          BeginRetraction();
+          spin_state_ = OFF;
 	  activation_buffer_ = millis() + 20000;
         }
         break;
@@ -176,8 +181,7 @@ public:
     // Turn on cane rotation motor
     digitalWrite(CANE_ROTATION_MOTOR_PIN, HIGH);
     // Turn on both retraction motors at full power
-    LSanalogWrite(RETRACTION_MOTOR_1_PIN, 32700);
-    LSanalogWrite(RETRACTION_MOTOR_2_PIN, 32700);
+    LSanalogWrite(RETRACTION_MOTOR_PIN, 21000);
   }
   
   // Deactivate the lightsaber

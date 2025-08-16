@@ -117,10 +117,11 @@ public:
       failsafe_off_ = 0; // Reset timer
     }
 
+	if (EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_OFF) || EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_ON)) {
     // State machine for saber control
     switch (power_state_) {
       case OFF:
-        if (!is_on_ && millis() > activation_buffer_) {
+        if (((EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_OFF) || EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_ON)) && !is_on_ && millis() > activation_buffer_) {
           ActivateSaber();
           power_state_ = ON;
 	  activation_buffer_ = millis() + 8000;
@@ -128,7 +129,7 @@ public:
         break;
         
       case ON:
-        if ( && millis() > activation_buffer_) {
+        if (((EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_OFF) || EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_ON)) && millis() > activation_buffer_) {
           BeginRetraction();
           power_state_ = RETRACTING;
 	  activation_buffer_ = millis() + 2000;
@@ -136,7 +137,7 @@ public:
         break;
 
       case RETRACTING:
-        if ( && millis() > activation_buffer_) {
+        if (((EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_OFF) || EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_ON)) && millis() > activation_buffer_) {
           DeactivateSaber();
           power_state_ = OFF;
 	  activation_buffer_ = millis() + 20000;

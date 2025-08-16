@@ -116,7 +116,8 @@ public:
       digitalWrite(CLUTCH_PIN, LOW);
       failsafe_off_ = 0; // Reset timer
     }
-
+	
+    bool Event2(enum BUTTON button, EVENT event, uint32_t modifiers) override {
 	if (EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_OFF) || EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_ON)) {
     // State machine for saber control
     switch (power_state_) {
@@ -146,6 +147,7 @@ public:
         
     }
    }
+  }
   }
 
   // Function to check if the saber is currently activated

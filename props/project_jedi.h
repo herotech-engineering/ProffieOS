@@ -20,11 +20,11 @@ public:
   bool retracted_ = true;
 
   // Pin definitions
-  static const int LED_STRIP_PIN = bladePowerPin5;     // LED pin for LED strip
-  static const int RETRACTION_MOTOR_PIN = bladePowerPin1; // LED pin for retraction motor 
-  static const int CANE_ROTATION_MOTOR_PIN = bladePowerPin4; // LED pin for cane rotation motor
-  static const int CLUTCH_PIN = bladePowerPin3;  // LED pin for clutch control
-  static const int CHASSIS_SPIN_PIN = bladePowerPin2; // LED pin for chassis spinning
+  static const int LED_STRIP_PIN = bladePowerPin1;     // LED pin for LED strip
+  static const int RETRACTION_MOTOR_PIN = bladePowerPin6; // LED pin for retraction motor 
+  static const int CANE_ROTATION_MOTOR_PIN = bladePowerPin2; // LED pin for cane rotation motor
+  static const int CLUTCH_PIN = bladePowerPin5;  // LED pin for clutch control
+  static const int CHASSIS_SPIN_PIN = bladePowerPin3; // LED pin for chassis spinning
 
   uint32_t clutch_return_time_ = 0;
   uint32_t blade_tighten_time_ = 0;
@@ -63,9 +63,9 @@ public:
       ignite_timer_ = 0;
       LSanalogWrite(CHASSIS_SPIN_PIN, 23000);
       SaberBase::TurnOn();
-    // Turn on LED strip (simple on/off, no PWM)
+    // Turn on LED strip
       LSanalogWrite(LED_STRIP_PIN, 26000);
-    // Move clutch right 5mm
+    // Move clutch right 
       digitalWrite(CLUTCH_PIN, HIGH);
     // Schedule clutch to return after 350ms
       clutch_return_time_ = millis() + 350;
@@ -81,7 +81,7 @@ public:
 
     // Check for blade tightening
     if (millis() > blade_tighten_time_ && blade_tighten_time_ > 0) {
-      LSanalogWrite(RETRACTION_MOTOR_PIN, 4000);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 2000);
       blade_tighten_time_ = 0;
       blade_tension_time_ = millis() + 50;
     }
@@ -115,17 +115,17 @@ public:
     bool Event2(enum BUTTON button, EVENT event, uint32_t modifiers) override {
     switch (EVENTID(button, event, modifiers)) {
     case EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_OFF):
-      if (retracted_ && millis() > activation_buffer_) {
-	  activation_buffer_ = millis() + 8000;
+      if (!is_on_ && retracted_ && millis() > activation_buffer_) {
+	  activation_buffer_ = millis() + 6000;
 	  retracted_ = false
       ActivateSaber();
 	  } 
-	  if (!retracted_ && millis() > activation_buffer_) {
+	  if (is_on_ && !retracted_ && millis() > activation_buffer_) {
       activation_buffer_ = millis() + 2000;
 	  retracted_ = true;
-      beginRetraction();
+      BeginRetraction();
       }
-      if (retracted_ && millis() > activation_buffer_) {
+      if (is_on_ && retracted_ && millis() > activation_buffer_) {
 	  activation_buffer_ = millis() + 15000;
 	  retracted_ = false
       DeactivateSaber();
@@ -133,17 +133,17 @@ public:
       return true;
 
     case EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_ON):
-      if (retracted_ && millis() > activation_buffer_) {
-	  activation_buffer_ = millis() + 8000;
+      if (!is_on_ && retracted_ && millis() > activation_buffer_) {
+	  activation_buffer_ = millis() + 6000;
 	  retracted_ = false
       ActivateSaber();
 	  } 
-	  if (!retracted_ && millis() > activation_buffer_) {
+	  if (is_on_ && !retracted_ && millis() > activation_buffer_) {
       activation_buffer_ = millis() + 2000;
 	  retracted_ = true;
-      beginRetraction();
+      BeginRetraction();
       }
-      if (retracted_ && millis() > activation_buffer_) {
+      if (is_on_ && retracted_ && millis() > activation_buffer_) {
 	  activation_buffer_ = millis() + 15000;
 	  retracted_ = false
       DeactivateSaber();
@@ -194,4 +194,4 @@ public:
   
 };
 
-#endif // PROPS_SPINNING_LIGHTSABER_H
+#endif

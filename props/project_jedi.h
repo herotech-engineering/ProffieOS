@@ -17,7 +17,7 @@ public:
 
   // State tracking
   bool is_on_ = false;
-  bool retracted_ = false;
+  bool retracted_ = true;
 
   // Pin definitions
   static const int LED_STRIP_PIN = bladePowerPin5;     // LED pin for LED strip
@@ -119,7 +119,17 @@ public:
 	  activation_buffer_ = millis() + 8000;
 	  retracted_ = false
       ActivateSaber();
-	  }
+	  } 
+	  if (!retracted_ && millis() > activation_buffer_) {
+      activation_buffer_ = millis() + 2000;
+	  retracted_ = true;
+      beginRetraction();
+      }
+      if (retracted_ && millis() > activation_buffer_) {
+	  activation_buffer_ = millis() + 15000;
+	  retracted_ = false
+      DeactivateSaber();
+	  } 
       return true;
 
     case EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_ON):

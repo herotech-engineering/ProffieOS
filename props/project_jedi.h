@@ -150,6 +150,32 @@ public:
 	  } 
       return true;
 
+    case EVENTID(BUTTON_POWER, EVENT_PRESSED, MODE_ON):
+	  if (is_on_ && !retracted_ && millis() > activation_buffer_) {
+      activation_buffer_ = millis() + 2000;
+	  retracted_ = true;
+      BeginRetraction();
+      }
+      if (is_on_ && retracted_ && millis() > activation_buffer_) {
+	  activation_buffer_ = millis() + 15000;
+	  retracted_ = false
+      DeactivateSaber();
+	  } 
+      return true;
+
+    case EVENTID(BUTTON_POWER, EVENT_PRESSED, MODE_OFF):
+	  if (is_on_ && !retracted_ && millis() > activation_buffer_) {
+      activation_buffer_ = millis() + 2000;
+	  retracted_ = true;
+      BeginRetraction();
+      }
+      if (is_on_ && retracted_ && millis() > activation_buffer_) {
+	  activation_buffer_ = millis() + 15000;
+	  retracted_ = false
+      DeactivateSaber();
+	  } 
+      return true;
+
   return false;
   }
 }

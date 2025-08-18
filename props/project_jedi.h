@@ -150,7 +150,7 @@ public:
 	  } 
       return true;
 
-    case EVENTID(BUTTON_POWER, EVENT_PRESSED, MODE_ON):
+    case EVENTID(BUTTON_POWER, EVENT_DOUBLE_CLICK, MODE_ON):
 	  if (is_on_ && !retracted_ && millis() > activation_buffer_) {
       activation_buffer_ = millis() + 2000;
 	  retracted_ = true;
@@ -163,7 +163,7 @@ public:
 	  } 
       return true;
 
-    case EVENTID(BUTTON_POWER, EVENT_PRESSED, MODE_OFF):
+    case EVENTID(BUTTON_POWER, EVENT_DOUBLE_CLICK, MODE_OFF):
 	  if (is_on_ && !retracted_ && millis() > activation_buffer_) {
       activation_buffer_ = millis() + 2000;
 	  retracted_ = true;

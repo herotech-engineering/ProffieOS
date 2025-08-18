@@ -26,6 +26,8 @@ public:
   static const int CLUTCH_PIN = bladePowerPin5;  // LED pin for clutch control
   static const int CHASSIS_SPIN_PIN = bladePowerPin3; // LED pin for chassis spinning
 
+  uint32_t pressed_counter_ = 0;
+  uint32_t last_check_time_ = 0;
   uint32_t clutch_return_time_ = 0;
   uint32_t blade_tighten_time_ = 0;
   uint32_t blade_tension_time_ = 0;
@@ -111,24 +113,24 @@ public:
       digitalWrite(CLUTCH_PIN, LOW);
       failsafe_off_ = 0; // Reset timer
     }
-	
+
+    if (millis() - last_check_time_ >= 300) { 
+	    last_check_time_ = millis();
+		if (pressed_counter_ < 2 && is_on_ && retracted_ && millis() > activation_buffer_) {
+			activation_buffer_ = millis() + 15000;
+	        retracted_ = true;
+            DeactivateSaber();
+	  } 
+	    pressed_counter_ = 0;
+	}
+	  
     bool Event2(enum BUTTON button, EVENT event, uint32_t modifiers) override {
     switch (EVENTID(button, event, modifiers)) {
     case EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_OFF):
       if (!is_on_ && retracted_ && millis() > activation_buffer_) {
 	  activation_buffer_ = millis() + 6000;
-	  retracted_ = false
+	  retracted_ = false;
       ActivateSaber();
-	  } 
-	  if (is_on_ && !retracted_ && millis() > activation_buffer_) {
-      activation_buffer_ = millis() + 2000;
-	  retracted_ = true;
-      BeginRetraction();
-      }
-      if (is_on_ && retracted_ && millis() > activation_buffer_) {
-	  activation_buffer_ = millis() + 15000;
-	  retracted_ = false
-      DeactivateSaber();
 	  } 
       return true;
 
@@ -138,16 +140,6 @@ public:
 	  retracted_ = false
       ActivateSaber();
 	  } 
-	  if (is_on_ && !retracted_ && millis() > activation_buffer_) {
-      activation_buffer_ = millis() + 2000;
-	  retracted_ = true;
-      BeginRetraction();
-      }
-      if (is_on_ && retracted_ && millis() > activation_buffer_) {
-	  activation_buffer_ = millis() + 15000;
-	  retracted_ = false
-      DeactivateSaber();
-	  } 
       return true;
 
     case EVENTID(BUTTON_POWER, EVENT_DOUBLE_CLICK, MODE_ON):
@@ -156,11 +148,6 @@ public:
 	  retracted_ = true;
       BeginRetraction();
       }
-      if (is_on_ && retracted_ && millis() > activation_buffer_) {
-	  activation_buffer_ = millis() + 15000;
-	  retracted_ = false
-      DeactivateSaber();
-	  } 
       return true;
 
     case EVENTID(BUTTON_POWER, EVENT_DOUBLE_CLICK, MODE_OFF):
@@ -169,11 +156,14 @@ public:
 	  retracted_ = true;
       BeginRetraction();
       }
-      if (is_on_ && retracted_ && millis() > activation_buffer_) {
-	  activation_buffer_ = millis() + 15000;
-	  retracted_ = false
-      DeactivateSaber();
-	  } 
+      return true;
+
+    case EVENTID(BUTTON_POWER, EVENT_PRESSED, MODE_ON):
+      pressed_counter_ = pressed_counter_ + 1;
+      return true;
+
+    case EVENTID(BUTTON_POWER, EVENT_PRESSED, MODE_OFF):
+      pressed_counter_ = pressed_counter_ + 1;
       return true;
 
   return false;

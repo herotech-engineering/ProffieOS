@@ -17,13 +17,8 @@ public:
 
   // State tracking
   bool is_on_ = false;
-  enum PowerState {
-    OFF,
-    ON,
-    RETRACTING,
-  };
-  PowerState power_state_ = OFF;
-  
+  bool retracted_ = false;
+
   // Pin definitions
   static const int LED_STRIP_PIN = bladePowerPin5;     // LED pin for LED strip
   static const int RETRACTION_MOTOR_PIN = bladePowerPin1; // LED pin for retraction motor 
@@ -118,37 +113,37 @@ public:
     }
 	
     bool Event2(enum BUTTON button, EVENT event, uint32_t modifiers) override {
-	if (EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_OFF) || EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_ON)) {
-    // State machine for saber control
-    switch (power_state_) {
-      case OFF:
-        if (((EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_OFF) || EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_ON)) && !is_on_ && millis() > activation_buffer_) {
-          ActivateSaber();
-          power_state_ = ON;
+    switch (EVENTID(button, event, modifiers)) {
+    case EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_OFF):
+      if (retracted_ && millis() > activation_buffer_) {
 	  activation_buffer_ = millis() + 8000;
-        }
-        break;
-        
-      case ON:
-        if (((EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_OFF) || EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_ON)) && millis() > activation_buffer_) {
-          BeginRetraction();
-          power_state_ = RETRACTING;
-	  activation_buffer_ = millis() + 2000;
-        }
-        break;
+	  retracted_ = false
+      ActivateSaber();
+	  }
+      return true;
 
-      case RETRACTING:
-        if (((EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_OFF) || EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_ON)) && millis() > activation_buffer_) {
-          DeactivateSaber();
-          power_state_ = OFF;
-	  activation_buffer_ = millis() + 20000;
-        }
-        break;
-        
-    }
-   }
+    case EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_ON):
+      if (retracted_ && millis() > activation_buffer_) {
+	  activation_buffer_ = millis() + 8000;
+	  retracted_ = false
+      ActivateSaber();
+	  } 
+	  if (!retracted_ && millis() > activation_buffer_) {
+      activation_buffer_ = millis() + 2000;
+	  retracted_ = true;
+      beginRetraction();
+      }
+      if (retracted_ && millis() > activation_buffer_) {
+	  activation_buffer_ = millis() + 15000;
+	  retracted_ = false
+      DeactivateSaber();
+	  } 
+      return true;
+
+  return false;
   }
-  }
+}
+
 
   // Function to check if the saber is currently activated
   bool IsOn() override {

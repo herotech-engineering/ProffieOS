@@ -154,7 +154,6 @@ public:
   }
 }
 
-
   // Function to check if the saber is currently activated
   bool IsOn() override {
     return is_on_;
@@ -167,7 +166,7 @@ public:
     ignite_timer_ = millis() + 500;
   }
   
-  // Begin retraction sequence when spinning slows
+  // Begin retraction sequence
   void BeginRetraction() {
     // failsafe off timing
     failsafe_off_ = millis() + 5000;

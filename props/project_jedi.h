@@ -137,7 +137,7 @@ public:
     case EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_ON):
       if (!is_on_ && retracted_ && millis() > activation_buffer_) {
 	  activation_buffer_ = millis() + 6000;
-	  retracted_ = false
+	  retracted_ = false;
       ActivateSaber();
 	  } 
       return true;
@@ -179,14 +179,14 @@ public:
   void ActivateSaber() {
     if (is_on_) return;
     is_on_ = true;
-    ignite_timer_ = millis() + 500;
+    ignite_timer_ = millis() + 300;
   }
   
   // Begin retraction sequence
   void BeginRetraction() {
     // failsafe off timing
     failsafe_off_ = millis() + 5000;
-    sound_off_ = millis() + 4000;
+    sound_off_ = millis() + 3000;
     // Turn on cane rotation motor
     digitalWrite(CANE_ROTATION_MOTOR_PIN, HIGH);
     // Turn on retraction motor at full power
@@ -197,13 +197,10 @@ public:
   void DeactivateSaber() {
     if (!is_on_) return;
     is_on_ = false;
-    // Turn off LED strip
     LSanalogWrite(LED_STRIP_PIN, 0);
     LSanalogWrite(CHASSIS_SPIN_PIN, 0);
-    // Turn off all motors
     LSanalogWrite(RETRACTION_MOTOR_PIN, 0);
     digitalWrite(CANE_ROTATION_MOTOR_PIN, LOW);
-    // Ensure servo is in left position
     digitalWrite(CLUTCH_PIN, LOW);
   }
   

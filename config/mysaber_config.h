@@ -12,7 +12,7 @@
 #endif
 
 #ifdef CONFIG_PROP
-#include "../props/project_jedi.h"  // Include our custom prop
+#include "../props/spinning_lightsaber.h"  // Include our custom prop
 #endif
 
 #ifdef CONFIG_PRESETS

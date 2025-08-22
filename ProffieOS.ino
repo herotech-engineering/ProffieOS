@@ -678,7 +678,7 @@ ArgParserInterface* CurrentArgParser;
 #undef CONFIG_PROP
 
 #ifndef PROP_TYPE
-#include "props/saber.h"
+#include "props/spinning_lightsaber.h"
 #endif
 
 PROP_TYPE prop;
@@ -1137,20 +1137,6 @@ public:
     if (!strcmp(cmd, "make_default_console")) {
       default_output = stdout_output;
       return true;
-    }
-    if (endswith("|", cmd) && e) {
-      char tmp[32];
-      StringPiece tag(cmd, strlen(cmd)-1);
-      LineTagger<128> line_tagger(tag);
-      const char* cmd2 = e;
-      const char *arg2 = strchr(e, ' ');
-      if (arg2 && arg2 - e < (int)sizeof(tmp)) {
-	memcpy(tmp, e, arg2 - e);
-	tmp[arg2 - e] = 0;
-	cmd2 = tmp;
-	arg2++;
-      }
-      return CommandParser::DoParse(cmd2, arg2);
     }
 #if 0
     // Not finished yet

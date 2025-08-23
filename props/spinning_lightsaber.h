@@ -44,7 +44,7 @@ public:
     pinMode(RETRACTION_MOTOR_PIN, OUTPUT);
     pinMode(CANE_ROTATION_MOTOR_PIN, OUTPUT);
     pinMode(CLUTCH_PIN, OUTPUT);
-	pinMode(CHASSIS_SPIN_PIN, OUTPUT);
+	  pinMode(CHASSIS_SPIN_PIN, OUTPUT);
 
     // Turn everything off initially
     LSanalogWriteSetup(LED_STRIP_PIN);

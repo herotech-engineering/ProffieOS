@@ -14,7 +14,7 @@ public:
   Spinning() : PropBase() {}
   
   const char* name() override { return "Spinning"; }
-
+//
   // State tracking
   bool is_on_ = false;
   bool retracted_ = true;

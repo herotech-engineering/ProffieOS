@@ -14,7 +14,7 @@ public:
   Spinning() : PropBase() {}
   
   const char* name() override { return "Spinning"; }
-//
+
   // State tracking
   bool is_on_ = false;
   bool retracted_ = true;
@@ -23,8 +23,8 @@ public:
   static const int LED_STRIP_PIN = bladePowerPin1;     // LED pin for LED strip
   static const int RETRACTION_MOTOR_PIN = bladePowerPin6; // LED pin for retraction motor 
   static const int CANE_ROTATION_MOTOR_PIN = bladePowerPin2; // LED pin for cane rotation motor
-  static const int CLUTCH_PIN = bladePowerPin5;  // LED pin for clutch control
-  static const int CHASSIS_SPIN_PIN = bladePowerPin3; // LED pin for chassis spinning
+  static const int CLUTCH_PIN = bladePowerPin3;  // LED pin for clutch control
+  static const int CHASSIS_SPIN_PIN = bladePowerPin5; // LED pin for chassis spinning
 
   uint32_t pressed_counter_ = 0;
   uint32_t last_check_time_ = 0;
@@ -44,17 +44,17 @@ public:
     pinMode(RETRACTION_MOTOR_PIN, OUTPUT);
     pinMode(CANE_ROTATION_MOTOR_PIN, OUTPUT);
     pinMode(CLUTCH_PIN, OUTPUT);
-	  pinMode(CHASSIS_SPIN_PIN, OUTPUT);
+    pinMode(CHASSIS_SPIN_PIN, OUTPUT);
 
     // Turn everything off initially
     LSanalogWriteSetup(LED_STRIP_PIN);
-	analogWrite(LED_STRIP_PIN, 0);
+    analogWrite(LED_STRIP_PIN, 0);
     LSanalogWriteSetup(RETRACTION_MOTOR_PIN);
     analogWrite(RETRACTION_MOTOR_PIN, 0);
     digitalWrite(CANE_ROTATION_MOTOR_PIN, LOW);
     digitalWrite(CLUTCH_PIN, LOW);
-	LSanalogWriteSetup(CHASSIS_SPIN_PIN);
-	analogWrite(CHASSIS_SPIN_PIN, 0);
+    LSanalogWriteSetup(CHASSIS_SPIN_PIN);
+    analogWrite(CHASSIS_SPIN_PIN, 0);
   }
 
   // Main loop function that gets called by ProffieOS
@@ -63,20 +63,17 @@ public:
 
     if (millis() > ignite_timer_ && ignite_timer_ > 0) {
       ignite_timer_ = 0;
-      LSanalogWrite(CHASSIS_SPIN_PIN, 23000);
+      LSanalogWrite(CHASSIS_SPIN_PIN, 1500);
       SaberBase::TurnOn();
-    // Turn on LED strip
       LSanalogWrite(LED_STRIP_PIN, 26000);
-    // Move clutch right 
       digitalWrite(CLUTCH_PIN, HIGH);
-    // Schedule clutch to return after 350ms
       clutch_return_time_ = millis() + 350;
     }
   
     // Check for clutch return timing
     if (millis() > clutch_return_time_ && clutch_return_time_ > 0) {
-      digitalWrite(CLUTCH_PIN, LOW); // Return to left position
-      clutch_return_time_ = 0; // Reset timer
+      digitalWrite(CLUTCH_PIN, LOW);
+      clutch_return_time_ = 0;
       blade_tighten_time_ = millis() + 150;
       LSanalogWrite(RETRACTION_MOTOR_PIN, 3000);
     }
@@ -96,104 +93,91 @@ public:
 
     if (sound_off_ > 0 && millis() > sound_off_) {
       SaberBase::TurnOff(SaberBase::OFF_NORMAL);
-      sound_off_ = 0; // Reset timer
+      sound_off_ = 0;
     }
 
     // Failsafe off
     if (failsafe_off_ > 0 && millis() > failsafe_off_) {
       DeactivateSaber();
-	  LSanalogWrite(CHASSIS_SPIN_PIN, 0);
+	    LSanalogWrite(CHASSIS_SPIN_PIN, 0);
       LSanalogWrite(LED_STRIP_PIN, 0);
-    
-      // Turn off all motors
       LSanalogWrite(RETRACTION_MOTOR_PIN, 0);
       digitalWrite(CANE_ROTATION_MOTOR_PIN, LOW);
-    
-      // Ensure clutch is in left position
       digitalWrite(CLUTCH_PIN, LOW);
-      failsafe_off_ = 0; // Reset timer
+      failsafe_off_ = 0;
     }
 
     if (millis() - last_check_time_ >= 300) { 
 	    last_check_time_ = millis();
-		if (pressed_counter_ < 2 && is_on_ && retracted_ && millis() > activation_buffer_) {
-			activation_buffer_ = millis() + 15000;
-	        retracted_ = true;
-            DeactivateSaber();
+	    if (pressed_counter_ > 2 && is_on_ && !retracted_) {
+		    activation_buffer_ = millis() + 2000;
+	      BeginRetraction(); }
+	    if (pressed_counter_ < 2 && is_on_ && !retracted_) {
+		    activation_buffer_ = millis() + 15000;
+      	DeactivateSaber();
 	  } 
 	    pressed_counter_ = 0;
 	}
-	  
-    bool Event2(enum BUTTON button, EVENT event, uint32_t modifiers) override {
-    switch (EVENTID(button, event, modifiers)) {
-    case EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_OFF):
-      if (!is_on_ && retracted_ && millis() > activation_buffer_) {
-	  activation_buffer_ = millis() + 6000;
-	  retracted_ = false;
-      ActivateSaber();
-	  } 
-      return true;
-
-    case EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_ON):
-      if (!is_on_ && retracted_ && millis() > activation_buffer_) {
-	  activation_buffer_ = millis() + 6000;
-	  retracted_ = false;
-      ActivateSaber();
-	  } 
-      return true;
-
-    case EVENTID(BUTTON_POWER, EVENT_DOUBLE_CLICK, MODE_ON):
-	  if (is_on_ && !retracted_ && millis() > activation_buffer_) {
-      activation_buffer_ = millis() + 2000;
-	  retracted_ = true;
-      BeginRetraction();
-      }
-      return true;
-
-    case EVENTID(BUTTON_POWER, EVENT_DOUBLE_CLICK, MODE_OFF):
-	  if (is_on_ && !retracted_ && millis() > activation_buffer_) {
-      activation_buffer_ = millis() + 2000;
-	  retracted_ = true;
-      BeginRetraction();
-      }
-      return true;
-
-    case EVENTID(BUTTON_POWER, EVENT_PRESSED, MODE_ON):
-      pressed_counter_ = pressed_counter_ + 1;
-      return true;
-
-    case EVENTID(BUTTON_POWER, EVENT_PRESSED, MODE_OFF):
-      pressed_counter_ = pressed_counter_ + 1;
-      return true;
-
-  return false;
-  }
 }
 
-  // Function to check if the saber is currently activated
-  bool IsOn() override {
+    bool IsOn() override {
     return is_on_;
   }
 
-  // Activate the lightsaber
+   bool Event2(enum BUTTON button, EVENT event, uint32_t modifiers) override {
+    switch (EVENTID(button, event, modifiers)) {
+    case EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_ON):
+      if (!is_on_ && retracted_ && millis() > activation_buffer_) {
+      activation_buffer_ = millis() + 3000;
+      ActivateSaber(); } 
+      //return true;
+
+    case EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_OFF):
+      if (!is_on_ && retracted_ && millis() > activation_buffer_) {
+      activation_buffer_ = millis() + 3000;
+      ActivateSaber(); } 
+      //return true;
+
+    case EVENTID(BUTTON_POWER, EVENT_CLICK_SHORT, MODE_ON):
+      if (is_on_ && !retracted_) {
+      activation_buffer_ = millis() + 2000;
+      BeginRetraction(); }
+      //return true;
+
+    case EVENTID(BUTTON_POWER, EVENT_CLICK_SHORT, MODE_OFF):
+      if (is_on_ && !retracted_) {
+      activation_buffer_ = millis() + 2000;
+      BeginRetraction(); }
+      //return true;
+
+    //case EVENTID(BUTTON_POWER, EVENT_PRESSED, MODE_ON):
+      //pressed_counter_ = pressed_counter_ + 1;
+      //return true;
+
+    //case EVENTID(BUTTON_POWER, EVENT_PRESSED, MODE_OFF):
+      //pressed_counter_ = pressed_counter_ + 1;
+      //return true;
+
+    default:
+      return false;
+  }
+}
+
   void ActivateSaber() {
     if (is_on_) return;
     is_on_ = true;
     ignite_timer_ = millis() + 300;
+    retracted_ = false;
   }
   
-  // Begin retraction sequence
   void BeginRetraction() {
-    // failsafe off timing
     failsafe_off_ = millis() + 5000;
     sound_off_ = millis() + 3000;
-    // Turn on cane rotation motor
     digitalWrite(CANE_ROTATION_MOTOR_PIN, HIGH);
-    // Turn on retraction motor at full power
     LSanalogWrite(RETRACTION_MOTOR_PIN, 21000);
+    retracted_ = true;
   }
   
-  // Deactivate the lightsaber
   void DeactivateSaber() {
     if (!is_on_) return;
     is_on_ = false;
@@ -203,7 +187,7 @@ public:
     digitalWrite(CANE_ROTATION_MOTOR_PIN, LOW);
     digitalWrite(CLUTCH_PIN, LOW);
   }
-  
+
 };
 
 #endif

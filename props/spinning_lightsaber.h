@@ -157,6 +157,7 @@ public:
     ignite_timer_ = millis() + 300;
     retracted_ = false;
     activation_buffer_ = millis() + 6000;
+    failsafe_off_ = millis() + 20000;
   }
   
   void BeginRetraction() {

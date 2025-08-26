@@ -29,6 +29,7 @@ public:
   uint32_t blade_tension_time_ = 0;
   uint32_t activation_buffer_ = 0;
   uint32_t failsafe_off_ = 0;
+  uint32_t time_up_ = 0;
   uint32_t ignite_timer_ = 0;
   uint32_t sound_off_ = 0;
 
@@ -63,7 +64,7 @@ public:
 
     if (millis() > ignite_timer_ && ignite_timer_ > 0) {
       ignite_timer_ = 0;
-      LSanalogWrite(CHASSIS_SPIN_PIN, 1500);
+      LSanalogWrite(CHASSIS_SPIN_PIN, 32000);
       SaberBase::TurnOn();
       LSanalogWrite(LED_STRIP_PIN, 26000);
       digitalWrite(CLUTCH_PIN, HIGH);
@@ -94,6 +95,11 @@ public:
     if (sound_off_ > 0 && millis() > sound_off_) {
       SaberBase::TurnOff(SaberBase::OFF_NORMAL);
       sound_off_ = 0;
+    }
+
+    if (time_up_ > 0 && millis() > time_up_) {
+      BeginRetraction();
+      time_up_ = 0;
     }
 
     // Failsafe off
@@ -157,7 +163,7 @@ public:
     ignite_timer_ = millis() + 300;
     retracted_ = false;
     activation_buffer_ = millis() + 6000;
-    failsafe_off_ = millis() + 20000;
+    time_up_ = millis() + 20000;
   }
   
   void BeginRetraction() {

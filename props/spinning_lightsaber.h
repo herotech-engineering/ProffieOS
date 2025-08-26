@@ -15,10 +15,6 @@ public:
   
   const char* name() override { return "Spinning"; }
 
-  // State tracking
-  bool is_on_ = false;
-  bool retracted_ = true;
-
   // Pin definitions
   static const int LED_STRIP_PIN = bladePowerPin1;     // LED pin for LED strip
   static const int RETRACTION_MOTOR_PIN = bladePowerPin6; // LED pin for retraction motor 
@@ -35,6 +31,10 @@ public:
   uint32_t failsafe_off_ = 0;
   uint32_t ignite_timer_ = 0;
   uint32_t sound_off_ = 0;
+
+    // State tracking
+    bool is_on_ = false;
+    bool retracted_ = true;
 
   void Setup() override {
     PropBase::Setup();
@@ -109,18 +109,16 @@ public:
 
     if (millis() - last_check_time_ >= 300) { 
 	    last_check_time_ = millis();
-	    if (pressed_counter_ > 2 && is_on_ && !retracted_) {
-		    activation_buffer_ = millis() + 2000;
-	      BeginRetraction(); }
-	    if (pressed_counter_ < 2 && is_on_ && !retracted_) {
+	    if (pressed_counter_ < 1 && is_on_ && retracted_ && millis() > activation_buffer_) {
 		    activation_buffer_ = millis() + 15000;
       	DeactivateSaber();
 	  } 
 	    pressed_counter_ = 0;
 	}
+
 }
 
-    bool IsOn() override {
+   bool IsOn() override {
     return is_on_;
   }
 
@@ -128,35 +126,25 @@ public:
     switch (EVENTID(button, event, modifiers)) {
     case EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_ON):
       if (!is_on_ && retracted_ && millis() > activation_buffer_) {
-      activation_buffer_ = millis() + 3000;
       ActivateSaber(); } 
-      //return true;
 
     case EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_OFF):
       if (!is_on_ && retracted_ && millis() > activation_buffer_) {
-      activation_buffer_ = millis() + 3000;
       ActivateSaber(); } 
-      //return true;
+
+    case EVENTID(BUTTON_POWER, EVENT_DOUBLE_CLICK, MODE_ON):
+      if (is_on_ && !retracted_ && millis() > activation_buffer_) {
+      BeginRetraction(); }
+
+    case EVENTID(BUTTON_POWER, EVENT_DOUBLE_CLICK, MODE_OFF):
+      if (is_on_ && !retracted_ && millis() > activation_buffer_) {
+      BeginRetraction(); }
 
     case EVENTID(BUTTON_POWER, EVENT_CLICK_SHORT, MODE_ON):
-      if (is_on_ && !retracted_) {
-      activation_buffer_ = millis() + 2000;
-      BeginRetraction(); }
-      //return true;
+      pressed_counter_ = pressed_counter_ + 1;
 
     case EVENTID(BUTTON_POWER, EVENT_CLICK_SHORT, MODE_OFF):
-      if (is_on_ && !retracted_) {
-      activation_buffer_ = millis() + 2000;
-      BeginRetraction(); }
-      //return true;
-
-    //case EVENTID(BUTTON_POWER, EVENT_PRESSED, MODE_ON):
-      //pressed_counter_ = pressed_counter_ + 1;
-      //return true;
-
-    //case EVENTID(BUTTON_POWER, EVENT_PRESSED, MODE_OFF):
-      //pressed_counter_ = pressed_counter_ + 1;
-      //return true;
+      pressed_counter_ = pressed_counter_ + 1;
 
     default:
       return false;
@@ -168,6 +156,7 @@ public:
     is_on_ = true;
     ignite_timer_ = millis() + 300;
     retracted_ = false;
+    activation_buffer_ = millis() + 6000;
   }
   
   void BeginRetraction() {
@@ -175,7 +164,9 @@ public:
     sound_off_ = millis() + 3000;
     digitalWrite(CANE_ROTATION_MOTOR_PIN, HIGH);
     LSanalogWrite(RETRACTION_MOTOR_PIN, 21000);
+    LSanalogWrite(CHASSIS_SPIN_PIN, 3000);
     retracted_ = true;
+    activation_buffer_ = millis() + 2000;
   }
   
   void DeactivateSaber() {

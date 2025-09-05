@@ -17,9 +17,9 @@ public:
 
   // Pin definitions
   static const int LED_STRIP_PIN = bladePowerPin1;     // LED pin for LED strip
-  static const int RETRACTION_MOTOR_PIN = bladePowerPin6; // LED pin for retraction motor 
+  static const int RETRACTION_MOTOR_PIN = bladePowerPin3; // LED pin for retraction motor 
   static const int CANE_ROTATION_MOTOR_PIN = bladePowerPin2; // LED pin for cane rotation motor
-  static const int CLUTCH_PIN = bladePowerPin3;  // LED pin for clutch control
+  static const int CLUTCH_PIN = bladePowerPin6;  // LED pin for clutch control
   static const int CHASSIS_SPIN_PIN = bladePowerPin5; // LED pin for chassis spinning
 
   uint32_t pressed_counter_ = 0;

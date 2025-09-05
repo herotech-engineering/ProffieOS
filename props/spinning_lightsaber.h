@@ -1,4 +1,4 @@
-// Custom prop file for spinning-activated lightsaber with retraction motors
+// Custom prop file for herotech lightsaber
 // For ProffieOS and Proffieboard V3.9
 #ifndef PROPS_SPINNING_LIGHTSABER_H
 #define PROPS_SPINNING_LIGHTSABER_H

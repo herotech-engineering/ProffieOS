@@ -64,11 +64,10 @@ public:
 
     if (millis() > ignite_timer_ && ignite_timer_ > 0) {
       ignite_timer_ = 0;
-      LSanalogWrite(CHASSIS_SPIN_PIN, 32000);
       SaberBase::TurnOn();
       LSanalogWrite(LED_STRIP_PIN, 26000);
       digitalWrite(CLUTCH_PIN, HIGH);
-      clutch_return_time_ = millis() + 350;
+      clutch_return_time_ = millis() + 320;
     }
   
     // Check for clutch return timing
@@ -76,7 +75,7 @@ public:
       digitalWrite(CLUTCH_PIN, LOW);
       clutch_return_time_ = 0;
       blade_tighten_time_ = millis() + 150;
-      LSanalogWrite(RETRACTION_MOTOR_PIN, 3000);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 2500);
     }
 
     // Check for blade tightening
@@ -98,7 +97,8 @@ public:
     }
 
     if (time_up_ > 0 && millis() > time_up_) {
-      BeginRetraction();
+      if (is_on_ && !retracted_ && millis() > activation_buffer_) {
+      BeginRetraction(); }
       time_up_ = 0;
     }
 
@@ -160,7 +160,8 @@ public:
   void ActivateSaber() {
     if (is_on_) return;
     is_on_ = true;
-    ignite_timer_ = millis() + 300;
+    LSanalogWrite(CHASSIS_SPIN_PIN, 22000);
+    ignite_timer_ = millis() + 350;
     retracted_ = false;
     activation_buffer_ = millis() + 6000;
     time_up_ = millis() + 20000;
@@ -170,8 +171,7 @@ public:
     failsafe_off_ = millis() + 5000;
     sound_off_ = millis() + 3000;
     digitalWrite(CANE_ROTATION_MOTOR_PIN, HIGH);
-    LSanalogWrite(RETRACTION_MOTOR_PIN, 21000);
-    LSanalogWrite(CHASSIS_SPIN_PIN, 3000);
+    LSanalogWrite(RETRACTION_MOTOR_PIN, 20000);
     retracted_ = true;
     activation_buffer_ = millis() + 2000;
   }

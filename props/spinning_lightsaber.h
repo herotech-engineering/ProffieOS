@@ -65,7 +65,7 @@ public:
     if (millis() > ignite_timer_ && ignite_timer_ > 0) {
       ignite_timer_ = 0;
       SaberBase::TurnOn();
-      LSanalogWrite(LED_STRIP_PIN, 30000);
+      LSanalogWrite(LED_STRIP_PIN, 26000);
       digitalWrite(CLUTCH_PIN, HIGH);
       clutch_return_time_ = millis() + 320;
     }

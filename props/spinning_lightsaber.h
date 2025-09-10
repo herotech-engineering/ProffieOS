@@ -160,7 +160,7 @@ public:
   void ActivateSaber() {
     if (is_on_) return;
     is_on_ = true;
-    LSanalogWrite(CHASSIS_SPIN_PIN, 10000);
+    LSanalogWrite(CHASSIS_SPIN_PIN, 8000);
     ignite_timer_ = millis() + 700;
     retracted_ = false;
     activation_buffer_ = millis() + 6000;

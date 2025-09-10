@@ -160,18 +160,18 @@ public:
   void ActivateSaber() {
     if (is_on_) return;
     is_on_ = true;
-    LSanalogWrite(CHASSIS_SPIN_PIN, 22000);
-    ignite_timer_ = millis() + 500;
+    LSanalogWrite(CHASSIS_SPIN_PIN, 10000);
+    ignite_timer_ = millis() + 700;
     retracted_ = false;
     activation_buffer_ = millis() + 6000;
-    time_up_ = millis() + 20000;
+    time_up_ = millis() + 16000;
   }
   
   void BeginRetraction() {
     failsafe_off_ = millis() + 5000;
     sound_off_ = millis() + 3000;
     digitalWrite(CANE_ROTATION_MOTOR_PIN, HIGH);
-    LSanalogWrite(RETRACTION_MOTOR_PIN, 16000);
+    LSanalogWrite(RETRACTION_MOTOR_PIN, 14000);
     retracted_ = true;
     activation_buffer_ = millis() + 2000;
   }

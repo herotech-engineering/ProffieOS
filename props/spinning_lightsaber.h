@@ -67,7 +67,7 @@ public:
       SaberBase::TurnOn();
       LSanalogWrite(LED_STRIP_PIN, 25000);
       digitalWrite(CLUTCH_PIN, HIGH);
-      clutch_return_time_ = millis() + 320;
+      clutch_return_time_ = millis() + 500;
     }
   
     // Check for clutch return timing
@@ -87,7 +87,7 @@ public:
 
     // Check for blade tensioning
     if (millis() > blade_tension_time_ && blade_tension_time_ > 0) {
-      LSanalogWrite(RETRACTION_MOTOR_PIN, 1500);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 1600);
       blade_tension_time_ = 0;
     }
 
@@ -168,12 +168,12 @@ public:
   }
   
   void BeginRetraction() {
-    failsafe_off_ = millis() + 3200;
-    sound_off_ = millis() + 3000;
+    failsafe_off_ = millis() + 2000;
+    sound_off_ = millis() + 1000;
     digitalWrite(CANE_ROTATION_MOTOR_PIN, HIGH);
-    LSanalogWrite(RETRACTION_MOTOR_PIN, 10000);
+    LSanalogWrite(RETRACTION_MOTOR_PIN, 12000);
     retracted_ = true;
-    activation_buffer_ = millis() + 2000;
+    activation_buffer_ = millis() + 800;
   }
   
   void DeactivateSaber() {

@@ -168,12 +168,12 @@ public:
   }
   
   void BeginRetraction() {
-    failsafe_off_ = millis() + 5000;
+    failsafe_off_ = millis() + 4000;
     sound_off_ = millis() + 3000;
     digitalWrite(CANE_ROTATION_MOTOR_PIN, HIGH);
     LSanalogWrite(RETRACTION_MOTOR_PIN, 10000);
     retracted_ = true;
-    activation_buffer_ = millis() + 2000;
+    activation_buffer_ = millis() + 3000;
   }
   
   void DeactivateSaber() {

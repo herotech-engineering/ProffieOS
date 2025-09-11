@@ -164,16 +164,16 @@ public:
     ignite_timer_ = millis() + 700;
     retracted_ = false;
     activation_buffer_ = millis() + 6000;
-    time_up_ = millis() + 8000;
+    time_up_ = millis() + 7000;
   }
   
   void BeginRetraction() {
-    failsafe_off_ = millis() + 4000;
+    failsafe_off_ = millis() + 3200;
     sound_off_ = millis() + 3000;
     digitalWrite(CANE_ROTATION_MOTOR_PIN, HIGH);
     LSanalogWrite(RETRACTION_MOTOR_PIN, 10000);
     retracted_ = true;
-    activation_buffer_ = millis() + 3000;
+    activation_buffer_ = millis() + 2000;
   }
   
   void DeactivateSaber() {

@@ -19,7 +19,7 @@ public:
   static const int LED_STRIP_PIN = bladePowerPin1;     // LED pin for LED strip
   static const int RETRACTION_MOTOR_PIN = bladePowerPin3; // LED pin for retraction motor 
   static const int CANE_ROTATION_MOTOR_PIN = bladePowerPin2; // LED pin for cane rotation motor
-  static const int CLUTCH_PIN = bladePowerPin6;  // LED pin for clutch control
+  static const int CLUTCH_PIN = bladePowerPin5;  // LED pin for clutch control
   static const int CHASSIS_SPIN_PIN = bladePowerPin4; // LED pin for chassis spinning
 
   uint32_t pressed_counter_ = 0;
@@ -53,7 +53,8 @@ public:
     LSanalogWriteSetup(RETRACTION_MOTOR_PIN);
     analogWrite(RETRACTION_MOTOR_PIN, 0);
     digitalWrite(CANE_ROTATION_MOTOR_PIN, LOW);
-    digitalWrite(CLUTCH_PIN, LOW);
+    LSanalogWriteSetup(CLUTCH_PIN);
+    analogWrite(CLUTCH_PIN, 0);
     LSanalogWriteSetup(CHASSIS_SPIN_PIN);
     analogWrite(CHASSIS_SPIN_PIN, 0);
   }
@@ -65,29 +66,29 @@ public:
     if (millis() > ignite_timer_ && ignite_timer_ > 0) {
       ignite_timer_ = 0;
       SaberBase::TurnOn();
-      LSanalogWrite(LED_STRIP_PIN, 25000);
-      digitalWrite(CLUTCH_PIN, HIGH);
-      clutch_return_time_ = millis() + 500;
+      LSanalogWrite(LED_STRIP_PIN, 24000);
+      LSanalogWrite(CLUTCH_PIN, 10000);
+      clutch_return_time_ = millis() + 350;
     }
   
     // Check for clutch return timing
     if (millis() > clutch_return_time_ && clutch_return_time_ > 0) {
-      digitalWrite(CLUTCH_PIN, LOW);
+      LSanalogWrite(CLUTCH_PIN, 0);
       clutch_return_time_ = 0;
       blade_tighten_time_ = millis() + 150;
-      LSanalogWrite(RETRACTION_MOTOR_PIN, 2200);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 5000);
     }
 
     // Check for blade tightening
     if (millis() > blade_tighten_time_ && blade_tighten_time_ > 0) {
-      LSanalogWrite(RETRACTION_MOTOR_PIN, 2000);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 4000);
       blade_tighten_time_ = 0;
-      blade_tension_time_ = millis() + 50;
+      blade_tension_time_ = millis() + 300;
     }
 
     // Check for blade tensioning
     if (millis() > blade_tension_time_ && blade_tension_time_ > 0) {
-      LSanalogWrite(RETRACTION_MOTOR_PIN, 1600);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 3000);
       blade_tension_time_ = 0;
     }
 
@@ -109,14 +110,13 @@ public:
       LSanalogWrite(LED_STRIP_PIN, 0);
       LSanalogWrite(RETRACTION_MOTOR_PIN, 0);
       digitalWrite(CANE_ROTATION_MOTOR_PIN, LOW);
-      digitalWrite(CLUTCH_PIN, LOW);
+      LSanalogWrite(CLUTCH_PIN, 0);
       failsafe_off_ = 0;
     }
 
     if (millis() - last_check_time_ >= 300) { 
 	    last_check_time_ = millis();
 	    if (pressed_counter_ < 1 && is_on_ && retracted_ && millis() > activation_buffer_) {
-		    activation_buffer_ = millis() + 15000;
       	DeactivateSaber();
 	  } 
 	    pressed_counter_ = 0;
@@ -160,20 +160,21 @@ public:
   void ActivateSaber() {
     if (is_on_) return;
     is_on_ = true;
-    LSanalogWrite(CHASSIS_SPIN_PIN, 0);
+    LSanalogWrite(CHASSIS_SPIN_PIN, 32768);
     ignite_timer_ = millis() + 700;
     retracted_ = false;
-    activation_buffer_ = millis() + 6000;
-    time_up_ = millis() + 7000;
+    activation_buffer_ = millis() + 3500;
+    time_up_ = millis() + 10000;
   }
   
   void BeginRetraction() {
-    failsafe_off_ = millis() + 2000;
-    sound_off_ = millis() + 1000;
+    failsafe_off_ = millis() + 7000;
+    sound_off_ = millis() + 4500;
     digitalWrite(CANE_ROTATION_MOTOR_PIN, HIGH);
-    LSanalogWrite(RETRACTION_MOTOR_PIN, 12000);
+    LSanalogWrite(RETRACTION_MOTOR_PIN, 32768);
+    LSanalogWrite(CHASSIS_SPIN_PIN, 25000);
     retracted_ = true;
-    activation_buffer_ = millis() + 800;
+    activation_buffer_ = millis() + 4300;
   }
   
   void DeactivateSaber() {
@@ -183,7 +184,8 @@ public:
     LSanalogWrite(CHASSIS_SPIN_PIN, 0);
     LSanalogWrite(RETRACTION_MOTOR_PIN, 0);
     digitalWrite(CANE_ROTATION_MOTOR_PIN, LOW);
-    digitalWrite(CLUTCH_PIN, LOW);
+    LSanalogWrite(CLUTCH_PIN, 0);
+    activation_buffer_ = millis() + 20000;
   }
 
 };

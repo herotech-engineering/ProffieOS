@@ -76,19 +76,19 @@ public:
       LSanalogWrite(CLUTCH_PIN, 0);
       clutch_return_time_ = 0;
       blade_tighten_time_ = millis() + 150;
-      LSanalogWrite(RETRACTION_MOTOR_PIN, 5000);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 6000);
     }
 
     // Check for blade tightening
     if (millis() > blade_tighten_time_ && blade_tighten_time_ > 0) {
-      LSanalogWrite(RETRACTION_MOTOR_PIN, 4000);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 5000);
       blade_tighten_time_ = 0;
       blade_tension_time_ = millis() + 300;
     }
 
     // Check for blade tensioning
     if (millis() > blade_tension_time_ && blade_tension_time_ > 0) {
-      LSanalogWrite(RETRACTION_MOTOR_PIN, 3000);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 4000);
       blade_tension_time_ = 0;
     }
 
@@ -161,7 +161,7 @@ public:
     if (is_on_) return;
     is_on_ = true;
     LSanalogWrite(CHASSIS_SPIN_PIN, 32768);
-    ignite_timer_ = millis() + 700;
+    ignite_timer_ = millis() + 300;
     retracted_ = false;
     activation_buffer_ = millis() + 3500;
     time_up_ = millis() + 10000;
@@ -172,7 +172,7 @@ public:
     sound_off_ = millis() + 4500;
     digitalWrite(CANE_ROTATION_MOTOR_PIN, HIGH);
     LSanalogWrite(RETRACTION_MOTOR_PIN, 32768);
-    LSanalogWrite(CHASSIS_SPIN_PIN, 25000);
+    LSanalogWrite(CHASSIS_SPIN_PIN, 0);
     retracted_ = true;
     activation_buffer_ = millis() + 4300;
   }

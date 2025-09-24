@@ -66,9 +66,9 @@ public:
     if (millis() > ignite_timer_ && ignite_timer_ > 0) {
       ignite_timer_ = 0;
       SaberBase::TurnOn();
-      LSanalogWrite(LED_STRIP_PIN, 24000);
-      LSanalogWrite(CLUTCH_PIN, 10000);
-      clutch_return_time_ = millis() + 350;
+      LSanalogWrite(LED_STRIP_PIN, 26000);
+      LSanalogWrite(CLUTCH_PIN, 5000);
+      clutch_return_time_ = millis() + 320;
     }
   
     // Check for clutch return timing
@@ -76,19 +76,19 @@ public:
       LSanalogWrite(CLUTCH_PIN, 0);
       clutch_return_time_ = 0;
       blade_tighten_time_ = millis() + 150;
-      LSanalogWrite(RETRACTION_MOTOR_PIN, 6000);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 5000);
     }
 
     // Check for blade tightening
     if (millis() > blade_tighten_time_ && blade_tighten_time_ > 0) {
-      LSanalogWrite(RETRACTION_MOTOR_PIN, 5000);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 4000);
       blade_tighten_time_ = 0;
-      blade_tension_time_ = millis() + 300;
+      blade_tension_time_ = millis() + 50;
     }
 
     // Check for blade tensioning
     if (millis() > blade_tension_time_ && blade_tension_time_ > 0) {
-      LSanalogWrite(RETRACTION_MOTOR_PIN, 4000);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 2500);
       blade_tension_time_ = 0;
     }
 
@@ -160,7 +160,7 @@ public:
   void ActivateSaber() {
     if (is_on_) return;
     is_on_ = true;
-    LSanalogWrite(CHASSIS_SPIN_PIN, 32768);
+    LSanalogWrite(CHASSIS_SPIN_PIN, 21000);
     ignite_timer_ = millis() + 300;
     retracted_ = false;
     activation_buffer_ = millis() + 3500;
@@ -168,13 +168,13 @@ public:
   }
   
   void BeginRetraction() {
-    failsafe_off_ = millis() + 7000;
-    sound_off_ = millis() + 4500;
+    failsafe_off_ = millis() + 7500;
+    sound_off_ = millis() + 2500;
     digitalWrite(CANE_ROTATION_MOTOR_PIN, HIGH);
     LSanalogWrite(RETRACTION_MOTOR_PIN, 32768);
-    LSanalogWrite(CHASSIS_SPIN_PIN, 0);
+    LSanalogWrite(CHASSIS_SPIN_PIN, 11000);
     retracted_ = true;
-    activation_buffer_ = millis() + 4300;
+    activation_buffer_ = millis() + 200;
   }
   
   void DeactivateSaber() {

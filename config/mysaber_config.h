@@ -4,7 +4,7 @@
 #define NUM_BUTTONS 1
 #define VOLUME 2600
 const unsigned int maxLedsPerStrip = 144;
-#define CLASH_THRESHOLD_G 1.0
+#define CLASH_THRESHOLD_G 0.7
 #define ENABLE_AUDIO
 #define ENABLE_MOTION
 #define ENABLE_SD
@@ -33,7 +33,7 @@ struct myLED {
     static const int Green = 0;
     static const int Blue = 255;
 };
-// REPLACE bladePowerPinX with the pin number for your LED strip
+// REPLACE bladePowerPinx with the pin number for your LED strip
 BladeConfig blades[] = {
  { 0, 
 DimBlade(20.0, SimpleBladePtr<myLED, NoLED, NoLED, NoLED, bladePowerPin2, -1, -1, -1>()), 

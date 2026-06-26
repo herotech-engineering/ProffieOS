@@ -19,7 +19,7 @@ public:
   static const int RETRACTION_MOTOR_PIN = bladePowerPin5; // LED pin for retraction motor 
   static const int CLUTCH_PIN = bladePowerPin1; // LED pin for clutch control
   static const int CHASSIS_SPIN_PIN = bladePowerPin4; // LED pin for chassis spinning
-  static const int CANE_ROTATION_DIR_PIN = blade5Pin; // Free 1 pin
+  static const int CANE_ROTATION_DIR_PIN = blade5Pin; // Free 1 pin 
   static const int CANE_ROTATION_PWM_PIN = blade7Pin; // Free 3 pin
 
   uint32_t pressed_counter_ = 0;
@@ -87,7 +87,7 @@ public:
       //digitalWrite(CANE_ROTATION_DIR_PIN, HIGH);
       //digitalWrite(CANE_ROTATION_PWM_PIN, HIGH);
       //LSanalogWrite(CANE_ROTATION_PWM_PIN, 11000);
-      LSanalogWrite(RETRACTION_MOTOR_PIN, 5000);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 4200); // INCREASE FOR MORE STIFFNESS BUT DON'T PUT TOO MUCH TENSION ON LED STRIP
       LSanalogWrite(CHASSIS_SPIN_PIN, 27000); // TUNE TO NON-CRITICAL SPEED FOR YOUR SABER
       swing_speed_check = millis() + 600;
       swing_threshold_tighten = 85.0;
@@ -95,7 +95,7 @@ public:
       //digitalWrite(CANE_ROTATION_DIR_PIN, HIGH);
       //digitalWrite(CANE_ROTATION_PWM_PIN, LOW);
       //LSanalogWrite(CANE_ROTATION_PWM_PIN, 0);
-      LSanalogWrite(RETRACTION_MOTOR_PIN, 3400); 
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 3400); // INCREASE FOR MORE STIFFNESS BUT DON'T PUT TOO MUCH TENSION ON LED STRIP
       LSanalogWrite(CHASSIS_SPIN_PIN, 8000); // TUNE TO NON-CRITICAL SPEED FOR YOUR SABER
       swing_threshold_tighten = 90.0;
       swing_speed_check = millis();
@@ -120,7 +120,7 @@ public:
       }
 }
 
-    if (millis() - wobble_check_time > 50 && is_on_ && !retracted_) {
+    if (millis() - wobble_check_time > 50) {//&& is_on_ && !retracted_) {
     float current_angle = fusor.pov_angle();
     float diff = current_angle - anchor_angle_;
     bool direction_reversed = false;
@@ -150,10 +150,11 @@ public:
 
     }
 
-    if (millis() - oscillation_increment_time_ > 1000 && is_on_ && !retracted_) {
+    if (millis() - oscillation_increment_time_ > 1000) { //&& is_on_ && !retracted_) {
       oscillation_increment_time_ = millis();
       if (oscillation_count_ > oscillation_limit_) {
       //LSanalogWrite(CHASSIS_SPIN_PIN, 0); // TUNE TO SECOND NON-CRITICAL SPEED FOR YOUR SABER, BACKUP NON-CRITICAL SPEED
+      //STDOUT.println("WOBBLE DETECTED! STABILIZING...");
       }
       oscillation_count_ = 0;
     }
@@ -180,7 +181,7 @@ public:
       clutch_return_time_ = 0;
       blade_tighten_time_ = millis() + 2000;
       LSanalogWrite(CHASSIS_SPIN_PIN, 4000); // TUNE TO NON-CRITICAL SPEED FOR YOUR SABER, TIGHTENING SEQUENCE
-      LSanalogWrite(RETRACTION_MOTOR_PIN, 4500);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 4500); // INCREASE FOR MORE STIFFNESS BUT DON'T PUT TOO MUCH TENSION ON LED STRIP
       digitalWrite(CANE_ROTATION_DIR_PIN, HIGH);
       digitalWrite(CANE_ROTATION_PWM_PIN, HIGH);
       //LSanalogWrite(CANE_ROTATION_PWM_PIN, 32768);
@@ -188,14 +189,14 @@ public:
 
     // Check for blade tightening
     if (millis() > blade_tighten_time_ && blade_tighten_time_ > 0) {
-      LSanalogWrite(RETRACTION_MOTOR_PIN, 6000);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 4300); // INCREASE FOR MORE STIFFNESS BUT DON'T PUT TOO MUCH TENSION ON LED STRIP
       blade_tighten_time_ = 0;
-      blade_tension_time_ = millis() + 1500;
+      blade_tension_time_ = millis() + 1500; 
     }
 
     // Check for blade tensioning
     if (millis() > blade_tension_time_ && blade_tension_time_ > 0) {
-      LSanalogWrite(RETRACTION_MOTOR_PIN, 3400);
+      LSanalogWrite(RETRACTION_MOTOR_PIN, 3400); // INCREASE FOR MORE STIFFNESS BUT DON'T PUT TOO MUCH TENSION ON LED STRIP
       LSanalogWrite(CHASSIS_SPIN_PIN, 8000); // TUNE TO NON-CRITICAL SPEED FOR YOUR SABER 
       digitalWrite(CANE_ROTATION_PWM_PIN, LOW);
       //LSanalogWrite(CANE_ROTATION_PWM_PIN, 0);
@@ -330,7 +331,7 @@ public:
     LSanalogWrite(CLUTCH_PIN, 0);
     power_down_ = 0;
     pwm_level_ = 20000;
-    activation_buffer_ = millis() + 60000;
+    activation_buffer_ = millis() + 120000; // 2 minutes cool-down time
   }
 
 };
